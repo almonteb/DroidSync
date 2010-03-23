@@ -1,8 +1,30 @@
+###############################################################################
+# 
+# Author    : Brendan Almonte (almonteb@datawh.net)
+# Company   : Data Warehouse
+# Date      : 03-23-2010
+# Filename  : sync.py
+#
+###############################################################################
+#
+#      Tested Version Info
+# O/S       : Tested on Snow Leopard 10.6.2
+# Python    : Python 2.6.1
+# iTunes.py : iTunes version 0.2 (18) by Dave Bayer
+#             (http://www.math.columbia.edu/~bayer/Python/iTunes/)
+#
+###############################################################################
+# Usage: python sync.py [playlist_name] [copy directory]
+###############################################################################
+#
+#      Description
 # Start by getting list of files in playlist
 # Compare files in playlist to whats already in the directory
 # if in directory.. ignore
 # if in directory and not on playlist... remove
 # if not in directory and on playlist... add
+#
+###############################################################################
 
 import os, sys,codecs, glob
 import xml.etree.ElementTree as ET
