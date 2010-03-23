@@ -1,0 +1,26 @@
+========================
+DroidSync
+========================
+
+A script to sync a playlist from iTunes with a folder (on your Android phone)
+
+To get started, grab sync.py using either git or wget:
+
+# With git:
+git clone git://github.com/almonteb/DroidSync.git
+
+# With wget:
+wget -O sync.py http://github.com/almonteb/DroidSync/raw/master/sync.py
+
+Then, pick a playlist and sync it:
+
+python sync.py Droid /Volumes/Droid/Music
+
+And pick a stack there!
+
+========================
+Contributors
+========================
+Brendan Almonte (almonteb@datawh.net) - Current maintainer
+
+Feel free to fork, make changes and send a pull request.
