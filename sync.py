@@ -14,7 +14,10 @@
 #             (http://www.math.columbia.edu/~bayer/Python/iTunes/)
 #
 ###############################################################################
-# Usage: python sync.py [playlist_name] [copy directory]
+#
+#      Usage
+# python sync.py [playlist_name] [copy directory]
+#
 ###############################################################################
 #
 #      Description
@@ -26,7 +29,7 @@
 #
 ###############################################################################
 
-import os, sys,codecs, glob
+import os, sys, codecs, glob
 import xml.etree.ElementTree as ET
 import shutil
 
@@ -41,46 +44,108 @@ def print_header(title):
     print title
     print "\n*******************************************************************************\n"
 
+def clean(str):
+    # Expandability for more chars to be replaced in the future
+    ret = str.replace('/', '-')
+    return ret
+        
 def get_files(dir):
-    files = glob.glob(os.path.join(dir, '*.mp3'))
+    files = glob.glob(os.path.join(dir, '*.*'))
     ret = []
     for file in files:
         ret.append(file.split('/').pop())
     return ret
 
-def get_track_names(tracks):
-    ret = []
-    for track in tracks:
-        ret.append(track.location().path.split('/').pop())
-    return ret
+def clean_dir(tracks, directory):
+    print_header("Performing cleanup")
+    # Clean files
+    for file in glob.glob(directory + "/*/*/*.*"):
+        arr    = file.split("/")
+        name   = clean(arr.pop())
+        album  = clean(arr.pop())
+        artist = clean(arr.pop())
+        print "Artist: " + artist
+        print "Album : " + album
+        print "Track : " + name
+        
+        found = False
+        
+        # TODO: Figure out more efficient way of doing this...
+        for t in tracks:
+            
+            # Gather track info
+            track_name = clean(t.location().path.split('/').pop())
+            if t.artist() == "":
+                track_artist = "Unknown Artist"
+            else:
+                track_artist = clean(t.artist())
+            if t.album() == "":
+                track_album = "Untitled"
+            else:
+                track_album = clean(t.album())
+                
+            if track_artist == artist:
+                if track_album == album:
+                    if track_name == name:
+                        found = True
+        
+        if not found:
+            print "Track will be removed..."
+            os.remove(directory + "/" + artist + "/" + album + "/" + name)
+        else:
+            print "Track will not be removed..."
     
+    # Clean empty directories
+    for artist in glob.glob(directory + "/*"):
+        if os.path.exists(artist + "/.DS_Store"):
+            os.remove(artist + "/.DS_Store")
+        for album in glob.glob(artist + "/*"):
+            if os.path.exists(album + "/.DS_Store"):
+                os.remove(album + "/.DS_Store")
+            if not os.listdir(album):
+                os.rmdir(album)
+        if not os.listdir(artist):
+            os.rmdir(artist)
+
 def sync_playlist(playlist, directory):
     pl      = get_playlists()
     files   = get_files(directory)
     
     for p in pl:
-        if p.name() == pl_name:
+        if p.name() == playlist:
             tracks = get_tracks(p)
 
             # Copy...
             print_header("Copying tracks")
             for t in tracks:
-                cur_track = t.location().path.split('/').pop()
-                if cur_track in files:
+                
+                # Gather track info
+                cur_track = clean(t.location().path.split('/').pop())
+                if t.artist() == "":
+                    artist = "Unknown Artist"
+                else:
+                    artist = clean(t.artist())
+                print "Artist: " + artist
+                if t.album() == "":
+                    album = "Untitled"
+                else:
+                    album = clean(t.album())
+                print "Album : " + album
+                print "Track : " + t.name()
+                if os.path.exists(directory + "/" + artist + "/" + album + "/" + cur_track):
                     print t.name() + " is already copied...\n"
                 else:
                     print t.name() + " will be copied...\n"
-                    shutil.copy(t.location().path, outdir)
+                    
+                    # Check directory structure exists
+                    if not os.path.exists(directory + "/" + artist):
+                        os.mkdir(directory + "/" + artist)
+                    if not os.path.exists(directory + "/" + artist + "/" + album):
+                        os.mkdir(directory + "/" + artist + "/" + album)
+                    shutil.copy2(t.location().path, directory + "/" + artist + "/" + album)
             
-            # Clean...
-            print_header("Performing cleanup")
-            track_names = get_track_names(tracks)
-            for file in files:
-                if file not in track_names:
-                    print file + " will be removed...\n"
-                    os.remove(directory + "/" + file)
-                else:
-                    print file + " will not be removed...\n"
+            # Clean up
+            clean_dir(tracks, outdir)
 
 ###############################################################################
 # Main
