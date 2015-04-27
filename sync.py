@@ -155,13 +155,13 @@ if len(sys.argv) is not 3:
     sys.exit()
 
 outdir  = sys.argv[2]
-pl_name = sys.argv[1]
+pl_name = sys.argv[1].decode("utf-8")
 
 if not os.path.exists(outdir):
     print "directory: " + outdir + " doesn't exist...\n"
     sys.exit()
 
-print_header("Playlist: " + pl_name)
+print_header(u"Playlist: {}".format(pl_name))
 sync_playlist(pl_name, outdir)
 print_header("Sync of playlist " + pl_name + " complete!")
 
