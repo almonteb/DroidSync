@@ -113,6 +113,8 @@ def clean_dir(tracks, directory):
 
 
 def sync_playlist(playlist, directory):
+    # iTunes integration taken from
+    # http://www.math.columbia.edu/%7Ebayer/Python/iTunes/
     pl      = app('iTunes').user_playlists()
     files   = get_files(directory)
     
