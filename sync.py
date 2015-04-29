@@ -29,12 +29,16 @@
 #
 ###############################################################################
 
-import os, sys, codecs, glob
-import xml.etree.ElementTree as ET
+#from __future__ import unicode_literals
+import os
+import sys
+import glob
+
+sys.path.append(os.path.join(os.path.dirname(__file__), 'iTunes'))
+
 import shutil
 
-from appscript import *
-from iTunes import *
+from appscript import app
 
 ###############################################################################
 # Misc Functions
@@ -107,13 +111,14 @@ def clean_dir(tracks, directory):
         if not os.listdir(artist):
             os.rmdir(artist)
 
+
 def sync_playlist(playlist, directory):
-    pl      = get_playlists()
+    pl      = app('iTunes').user_playlists()
     files   = get_files(directory)
     
     for p in pl:
         if p.name() == playlist:
-            tracks = get_tracks(p)
+            tracks = p.file_tracks()
 
             # Copy...
             print_header("Copying tracks")
