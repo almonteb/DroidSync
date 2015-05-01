@@ -10,12 +10,12 @@
 #
 #      Tested Version Info
 # O/S       : Tested on Snow Leopard 10.6.2 and Yosemity 10.10.3
-# Python    : Python 2.6.1 and 2.7.8
+# Python    : Python 2.6.1, 2.7.8 and 3.4.1
 #
 ###############################################################################
 #
 #      Usage
-# python sync.py [playlist_name] [copy directory]
+# python sync.py [playlist_name [playlist_name ...]] [copy directory]
 #
 ###############################################################################
 #
@@ -125,6 +125,15 @@ def sync_playlist(playlist_names, target_directory):
 
     clean_droid_dir(target_directory)
 
+
+def unicode_safe(s):
+    PY2K = sys.version_info[0] == 2
+    if PY2K:
+        return a.decode("utf-8")
+    else:
+        return s
+
+
 ###############################################################################
 # Main
 ###############################################################################
@@ -132,15 +141,16 @@ if len(sys.argv) < 3:
     print(u"usage: [playlist_name [playlist_name, ...]] [copy directory]")
     sys.exit()
 
-outdir  = os.path.abspath(sys.argv[-1].decode("utf-8"))
+outdir = os.path.abspath(unicode_safe(sys.argv[-1]))
+
 if not os.path.exists(outdir):
     print(u"directory: {} doesn't exist...".format(outdir))
     sys.exit()
 
 pl_names = []
 for name in sys.argv[1:-1]:
-    pl_names.append(name.decode("utf-8"))
+    pl_names.append(unicode_safe(name))
 
-print_header(u"Playlists: {}".format(string.join(pl_names, ', ')))
+print_header(u"Playlists: {}".format(', '.join(pl_names)))
 sync_playlist(pl_names, outdir)
 print_header(u"Sync of playlists complete!")
