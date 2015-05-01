@@ -8,10 +8,8 @@
 ###############################################################################
 #
 #      Tested Version Info
-# O/S       : Tested on Snow Leopard 10.6.2
-# Python    : Python 2.6.1
-# iTunes.py : iTunes version 0.2 (18) by Dave Bayer
-#             (http://www.math.columbia.edu/~bayer/Python/iTunes/)
+# O/S       : Tested on Snow Leopard 10.6.2 and Yosemity 10.10.3
+# Python    : Python 2.6.1 and 2.7.8
 #
 ###############################################################################
 #
@@ -29,146 +27,112 @@
 #
 ###############################################################################
 
-#from __future__ import unicode_literals
+from __future__ import print_function
 import os
 import sys
-import glob
-
-sys.path.append(os.path.join(os.path.dirname(__file__), 'iTunes'))
-
 import shutil
-
 from appscript import app
 
 ###############################################################################
 # Misc Functions
 ###############################################################################
+
+
 def print_header(title):
-    print "\n*******************************************************************************\n"
-    print title
-    print "\n*******************************************************************************\n"
+    """
+    Generate a shiny header banner using the title string and lots of stars.
 
-def clean(str):
-    # Expandability for more chars to be replaced in the future
-    ret = str.replace('/', '-')
-    return ret
-        
-def get_files(dir):
-    files = glob.glob(os.path.join(dir, '*.*'))
+    :rtype : str
+    """
+    print(u"\n{0}\n{1}\n{0}".format('*' * 80, title))
+
+
+def get_relative_filenames(directory):
+    if not directory.endswith('/'):
+        directory += '/'
     ret = []
-    for file in files:
-        ret.append(file.split('/').pop())
+    for root, dirs, files in os.walk(directory):
+        relative_path = root[len(directory):]
+        for f in files:
+            ret.append(os.path.join(relative_path, f))
     return ret
 
-def clean_dir(tracks, directory):
+
+def clean_droid_dir(directory):
     print_header("Performing cleanup")
-    # Clean files
-    for file in glob.glob(directory + "/*/*/*.*"):
-        arr    = file.split("/")
-        name   = clean(arr.pop())
-        album  = clean(arr.pop())
-        artist = clean(arr.pop())
-        print "Artist: " + artist
-        print "Album : " + album
-        print "Track : " + name
-        
-        found = False
-        
-        # TODO: Figure out more efficient way of doing this...
-        for t in tracks:
-            
-            # Gather track info
-            track_name = clean(t.location().path.split('/').pop())
-            if t.artist() == "":
-                track_artist = "Unknown Artist"
-            else:
-                track_artist = clean(t.artist())
-            if t.album() == "":
-                track_album = "Untitled"
-            else:
-                track_album = clean(t.album())
-                
-            if track_artist == artist:
-                if track_album == album:
-                    if track_name == name:
-                        found = True
-        
-        if not found:
-            print "Track will be removed..."
-            os.remove(directory + "/" + artist + "/" + album + "/" + name)
-        else:
-            print "Track will not be removed..."
-    
-    # Clean empty directories
-    for artist in glob.glob(directory + "/*"):
-        if os.path.exists(artist + "/.DS_Store"):
-            os.remove(artist + "/.DS_Store")
-        for album in glob.glob(artist + "/*"):
-            if os.path.exists(album + "/.DS_Store"):
-                os.remove(album + "/.DS_Store")
-            if not os.listdir(album):
-                os.rmdir(album)
-        if not os.listdir(artist):
-            os.rmdir(artist)
+    #
+    # # Clean empty directories
+    # for artist in glob.glob(directory + "/*"):
+    #     if os.path.exists(artist + "/.DS_Store"):
+    #         os.remove(artist + "/.DS_Store")
+    #     for album in glob.glob(artist + "/*"):
+    #         if os.path.exists(album + "/.DS_Store"):
+    #             os.remove(album + "/.DS_Store")
+    #         if not os.listdir(album):
+    #             os.rmdir(album)
+    #     if not os.listdir(artist):
+    #         os.rmdir(artist)
 
 
-def sync_playlist(playlist, directory):
+def sync_playlist(playlist_name, target_directory):
     # iTunes integration taken from
     # http://www.math.columbia.edu/%7Ebayer/Python/iTunes/
-    pl      = app('iTunes').user_playlists()
-    files   = get_files(directory)
-    
-    for p in pl:
-        if p.name() == playlist:
-            tracks = p.file_tracks()
+    files_in_playlists = []
+    print_header("Collecting tracks")
+    for playlist in app('iTunes').user_playlists():
+        if playlist.name() == playlist_name:
+            for t in playlist.file_tracks():
+                files_in_playlists.append(t.location().path)
 
-            # Copy...
-            print_header("Copying tracks")
-            for t in tracks:
-                
-                # Gather track info
-                cur_track = clean(t.location().path.split('/').pop())
-                if t.artist() == "":
-                    artist = "Unknown Artist"
-                else:
-                    artist = clean(t.artist())
-                print "Artist: " + artist
-                if t.album() == "":
-                    album = "Untitled"
-                else:
-                    album = clean(t.album())
-                print "Album : " + album
-                print "Track : " + t.name()
-                if os.path.exists(directory + "/" + artist + "/" + album + "/" + cur_track):
-                    print t.name() + " is already copied...\n"
-                else:
-                    print t.name() + " will be copied...\n"
-                    
-                    # Check directory structure exists
-                    if not os.path.exists(directory + "/" + artist):
-                        os.mkdir(directory + "/" + artist)
-                    if not os.path.exists(directory + "/" + artist + "/" + album):
-                        os.mkdir(directory + "/" + artist + "/" + album)
-                    shutil.copy2(t.location().path, directory + "/" + artist + "/" + album)
-            
-            # Clean up
-            clean_dir(tracks, outdir)
+    itunes_music_folder = os.path.commonprefix(files_in_playlists)
+    files_in_playlists = \
+        [f.replace(itunes_music_folder, '') for f in files_in_playlists]
+    files_on_droid = get_relative_filenames(target_directory)
+
+    to_be_copied = [x for x in files_in_playlists if x not in files_on_droid]
+    to_be_ignored = [x for x in files_in_playlists if x in files_on_droid]
+    to_be_removed = [x for x in files_on_droid if x not in files_in_playlists]
+
+    print_header("Ignoring tracks found on droid and in playlist")
+    if len(to_be_ignored):
+        for f in to_be_ignored:
+            print(u"Ignore {}".format(f))
+    else:
+        print(u"Nothing to ignore.")
+
+    print_header("Copying tracks found in playlist, but not on droid")
+    if len(to_be_copied):
+        for f in to_be_copied:
+            print(u"Copy {}".format(f))
+            target_dirname = os.path.join(target_directory, os.path.dirname(f))
+            if not os.path.exists(target_dirname):
+                os.makedirs(target_dirname)
+            shutil.copy2(os.path.join(itunes_music_folder, f), target_dirname)
+    else:
+        print(u"Nothing to copy.")
+
+    print_header("Removing tracks found on droid, but not in playlist")
+    if len(to_be_removed):
+        for f in to_be_removed:
+            print(u"Renove {}".format(f))
+            os.remove(os.path.join(target_directory, f))
+    else:
+        print(u"Nothing to remove.")
 
 ###############################################################################
 # Main
 ###############################################################################
 if len(sys.argv) is not 3:
-    print "usage: [playlist_name] [copy directory]"
+    print(u"usage: [playlist_name] [copy directory]")
     sys.exit()
 
-outdir  = sys.argv[2]
+outdir  = os.path.abspath(sys.argv[2].decode("utf-8"))
 pl_name = sys.argv[1].decode("utf-8")
 
 if not os.path.exists(outdir):
-    print "directory: " + outdir + " doesn't exist...\n"
+    print(u"directory: {} doesn't exist...".format(outdir))
     sys.exit()
 
 print_header(u"Playlist: {}".format(pl_name))
 sync_playlist(pl_name, outdir)
-print_header("Sync of playlist " + pl_name + " complete!")
-
+print_header(u"Sync of playlist {} complete!".format(pl_name))
