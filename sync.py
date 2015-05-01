@@ -31,6 +31,7 @@
 from __future__ import print_function
 import os
 import sys
+import string
 import shutil
 from appscript import app
 
@@ -66,7 +67,7 @@ def clean_droid_dir(directory):
     :param directory: The folder to scan for empty folders
     :return:
     """
-    print_header("Performing cleanup")
+    print_header(u"Performing cleanup")
     for root, dirs, files in os.walk(directory):
         if u'.DS_Store' in files:
             os.remove(os.path.join(root, u'.DS_Store'))
@@ -76,13 +77,14 @@ def clean_droid_dir(directory):
             print(u'Remove dir {}'.format(root))
             os.removedirs(root)
 
-def sync_playlist(playlist_name, target_directory):
+def sync_playlist(playlist_names, target_directory):
     # iTunes integration taken from
     # http://www.math.columbia.edu/%7Ebayer/Python/iTunes/
     files_in_playlists = []
-    print_header("Collecting tracks")
+    print_header(u"Collecting tracks")
     for playlist in app('iTunes').user_playlists():
-        if playlist.name() == playlist_name:
+        if playlist.name() in playlist_names:
+            print(u'Include playlist "{}"'.format(playlist.name()))
             for t in playlist.file_tracks():
                 files_in_playlists.append(t.location().path)
 
@@ -95,14 +97,14 @@ def sync_playlist(playlist_name, target_directory):
     to_be_ignored = [x for x in files_in_playlists if x in files_on_droid]
     to_be_removed = [x for x in files_on_droid if x not in files_in_playlists]
 
-    print_header("Ignoring tracks found on droid and in playlist")
+    print_header(u"Ignoring tracks found on droid and in playlist")
     if len(to_be_ignored):
         for f in to_be_ignored:
             print(u'Ignore "{}"'.format(f))
     else:
         print(u"Nothing to ignore.")
 
-    print_header("Copying tracks found in playlist, but not on droid")
+    print_header(u"Copying tracks found in playlist, but not on droid")
     if len(to_be_copied):
         for f in to_be_copied:
             print(u'Copy "{}"'.format(f))
@@ -113,7 +115,7 @@ def sync_playlist(playlist_name, target_directory):
     else:
         print(u"Nothing to copy.")
 
-    print_header("Removing tracks found on droid, but not in playlist")
+    print_header(u"Removing tracks found on droid, but not in playlist")
     if len(to_be_removed):
         for f in to_be_removed:
             print(u'Remove "{}"'.format(f))
@@ -126,17 +128,19 @@ def sync_playlist(playlist_name, target_directory):
 ###############################################################################
 # Main
 ###############################################################################
-if len(sys.argv) is not 3:
-    print(u"usage: [playlist_name] [copy directory]")
+if len(sys.argv) < 3:
+    print(u"usage: [playlist_name [playlist_name, ...]] [copy directory]")
     sys.exit()
 
-outdir  = os.path.abspath(sys.argv[2].decode("utf-8"))
-pl_name = sys.argv[1].decode("utf-8")
-
+outdir  = os.path.abspath(sys.argv[-1].decode("utf-8"))
 if not os.path.exists(outdir):
     print(u"directory: {} doesn't exist...".format(outdir))
     sys.exit()
 
-print_header(u"Playlist: {}".format(pl_name))
-sync_playlist(pl_name, outdir)
-print_header(u"Sync of playlist {} complete!".format(pl_name))
+pl_names = []
+for name in sys.argv[1:-1]:
+    pl_names.append(name.decode("utf-8"))
+
+print_header(u"Playlists: {}".format(string.join(pl_names, ', ')))
+sync_playlist(pl_names, outdir)
+print_header(u"Sync of playlists complete!")
