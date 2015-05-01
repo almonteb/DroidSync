@@ -59,20 +59,21 @@ def get_relative_filenames(directory):
 
 
 def clean_droid_dir(directory):
-    print_header("Performing cleanup")
-    #
-    # # Clean empty directories
-    # for artist in glob.glob(directory + "/*"):
-    #     if os.path.exists(artist + "/.DS_Store"):
-    #         os.remove(artist + "/.DS_Store")
-    #     for album in glob.glob(artist + "/*"):
-    #         if os.path.exists(album + "/.DS_Store"):
-    #             os.remove(album + "/.DS_Store")
-    #         if not os.listdir(album):
-    #             os.rmdir(album)
-    #     if not os.listdir(artist):
-    #         os.rmdir(artist)
+    """
+    Clean empty directories
 
+    :param directory: The folder to scan for empty folders
+    :return:
+    """
+    print_header("Performing cleanup")
+    for root, dirs, files in os.walk(directory):
+        if '.DS_Store' in files:
+            os.remove(os.path.join(root, '.DS_Store'))
+
+    for root, dirs, files in os.walk(directory, True):
+        if len(dirs) == 0 and len(files) == 0:
+            print('Remove dir {}'.format(root))
+            os.removedirs(root)
 
 def sync_playlist(playlist_name, target_directory):
     # iTunes integration taken from
@@ -118,6 +119,8 @@ def sync_playlist(playlist_name, target_directory):
             os.remove(os.path.join(target_directory, f))
     else:
         print(u"Nothing to remove.")
+
+    clean_droid_dir(target_directory)
 
 ###############################################################################
 # Main
