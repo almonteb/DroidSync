@@ -1,3 +1,4 @@
+# encoding: utf-8
 ###############################################################################
 # 
 # Author    : Brendan Almonte (almonteb@datawh.net)
@@ -67,12 +68,12 @@ def clean_droid_dir(directory):
     """
     print_header("Performing cleanup")
     for root, dirs, files in os.walk(directory):
-        if '.DS_Store' in files:
-            os.remove(os.path.join(root, '.DS_Store'))
+        if u'.DS_Store' in files:
+            os.remove(os.path.join(root, u'.DS_Store'))
 
     for root, dirs, files in os.walk(directory, True):
         if len(dirs) == 0 and len(files) == 0:
-            print('Remove dir {}'.format(root))
+            print(u'Remove dir {}'.format(root))
             os.removedirs(root)
 
 def sync_playlist(playlist_name, target_directory):
@@ -97,14 +98,14 @@ def sync_playlist(playlist_name, target_directory):
     print_header("Ignoring tracks found on droid and in playlist")
     if len(to_be_ignored):
         for f in to_be_ignored:
-            print(u"Ignore {}".format(f))
+            print(u'Ignore "{}"'.format(f))
     else:
         print(u"Nothing to ignore.")
 
     print_header("Copying tracks found in playlist, but not on droid")
     if len(to_be_copied):
         for f in to_be_copied:
-            print(u"Copy {}".format(f))
+            print(u'Copy "{}"'.format(f))
             target_dirname = os.path.join(target_directory, os.path.dirname(f))
             if not os.path.exists(target_dirname):
                 os.makedirs(target_dirname)
@@ -115,7 +116,7 @@ def sync_playlist(playlist_name, target_directory):
     print_header("Removing tracks found on droid, but not in playlist")
     if len(to_be_removed):
         for f in to_be_removed:
-            print(u"Renove {}".format(f))
+            print(u'Remove "{}"'.format(f))
             os.remove(os.path.join(target_directory, f))
     else:
         print(u"Nothing to remove.")
