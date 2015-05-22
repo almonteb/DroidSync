@@ -94,8 +94,16 @@ def sync_playlist(playlist_names, target_directory):
     files_on_droid = get_relative_filenames(target_directory)
 
     to_be_copied = [x for x in files_in_playlists if x not in files_on_droid]
-    to_be_ignored = [x for x in files_in_playlists if x in files_on_droid]
     to_be_removed = [x for x in files_on_droid if x not in files_in_playlists]
+    to_be_ignored = []
+
+    files_on_both_sides = [x for x in files_in_playlists if x in files_on_droid]
+    for f in files_on_both_sides:
+        if os.path.getmtime(os.path.join(itunes_music_folder, f)) > \
+            os.path.getmtime(os.path.join(target_directory, f)):
+            to_be_copied.append(f)
+        else:
+            to_be_ignored.append(f)
 
     print_header(u"Ignoring tracks found on droid and in playlist")
     if len(to_be_ignored):
@@ -104,9 +112,9 @@ def sync_playlist(playlist_names, target_directory):
     else:
         print(u"Nothing to ignore.")
 
-    print_header(u"Copying tracks found in playlist, but not on droid")
+    print_header(u"Copying tracks found in playlist, but not (or older) on droid")
     if len(to_be_copied):
-        for f in to_be_copied:
+        for f in sorted(to_be_copied):
             print(u'Copy "{}"'.format(f))
             target_dirname = os.path.join(target_directory, os.path.dirname(f))
             if not os.path.exists(target_dirname):
@@ -117,7 +125,7 @@ def sync_playlist(playlist_names, target_directory):
 
     print_header(u"Removing tracks found on droid, but not in playlist")
     if len(to_be_removed):
-        for f in to_be_removed:
+        for f in sorted(to_be_removed):
             print(u'Remove "{}"'.format(f))
             os.remove(os.path.join(target_directory, f))
     else:
@@ -129,7 +137,7 @@ def sync_playlist(playlist_names, target_directory):
 def unicode_safe(s):
     PY2K = sys.version_info[0] == 2
     if PY2K:
-        return a.decode("utf-8")
+        return s.decode("utf-8")
     else:
         return s
 
