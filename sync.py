@@ -77,7 +77,7 @@ def clean_droid_dir(directory):
             print(u'Remove dir {}'.format(root))
             os.removedirs(root)
 
-def sync_playlist(playlist_names, target_directory):
+def sync_playlist(playlist_names, target_directory, add_only=False):
     # iTunes integration taken from
     # http://www.math.columbia.edu/%7Ebayer/Python/iTunes/
     files_in_playlists = []
@@ -123,13 +123,16 @@ def sync_playlist(playlist_names, target_directory):
     else:
         print(u"Nothing to copy.")
 
-    print_header(u"Removing tracks found on droid, but not in playlist")
-    if len(to_be_removed):
-        for f in sorted(to_be_removed):
-            print(u'Remove "{}"'.format(f))
-            os.remove(os.path.join(target_directory, f))
+    if add_only:
+        print(u"Skip removing files.")
     else:
-        print(u"Nothing to remove.")
+        print_header(u"Removing tracks found on droid, but not in playlist")
+        if len(to_be_removed):
+            for f in sorted(to_be_removed):
+                print(u'Remove "{}"'.format(f))
+                os.remove(os.path.join(target_directory, f))
+        else:
+            print(u"Nothing to remove.")
 
     clean_droid_dir(target_directory)
 
@@ -147,6 +150,9 @@ def parse_args():
 Copy music files from iTunes to an android device.
 '''
     parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-a', '--add', dest='add_only', action='store_const',
+                        const=True, default=False,
+                        help='only add files to target dir')
     parser.add_argument('playlist', nargs='+', help='the playlist name(s)')
     parser.add_argument('outdir', help='the target folder')
     return parser.parse_args()
@@ -167,5 +173,5 @@ for name in args.playlist:
     pl_names.append(unicode_safe(name))
 
 print_header(u"Playlists: {}".format(', '.join(pl_names)))
-sync_playlist(pl_names, outdir)
+sync_playlist(pl_names, outdir, add_only=args.add_only)
 print_header(u"Sync of playlists complete!")
