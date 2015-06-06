@@ -31,7 +31,7 @@
 from __future__ import print_function
 import os
 import sys
-import string
+import argparse
 import shutil
 from appscript import app
 
@@ -142,21 +142,28 @@ def unicode_safe(s):
         return s
 
 
+def parse_args():
+    description = '''
+Copy music files from iTunes to an android device.
+'''
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('playlist', nargs='+', help='the playlist name(s)')
+    parser.add_argument('outdir', help='the target folder')
+    return parser.parse_args()
+
 ###############################################################################
 # Main
 ###############################################################################
-if len(sys.argv) < 3:
-    print(u"usage: [playlist_name [playlist_name, ...]] [copy directory]")
-    sys.exit()
 
-outdir = os.path.abspath(unicode_safe(sys.argv[-1]))
+args = parse_args()
+outdir = os.path.abspath(unicode_safe(args.outdir))
 
 if not os.path.exists(outdir):
-    print(u"directory: {} doesn't exist...".format(outdir))
+    print(u"directory {} doesn't exist...".format(outdir))
     sys.exit()
 
 pl_names = []
-for name in sys.argv[1:-1]:
+for name in args.playlist:
     pl_names.append(unicode_safe(name))
 
 print_header(u"Playlists: {}".format(', '.join(pl_names)))
