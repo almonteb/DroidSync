@@ -1,3 +1,5 @@
-iTunes.py
-iTunes.pyc
-
+__pycache__
+*.pyc
+build
+dist
+*.egg-info

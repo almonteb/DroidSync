@@ -1,6 +1,6 @@
 # encoding: utf-8
 ###############################################################################
-# 
+#
 # Author    : Brendan Almonte (almonteb@datawh.net)
 # Company   : Data Warehouse
 # Date      : 03-23-2010
@@ -39,6 +39,8 @@ from appscript import app
 # Misc Functions
 ###############################################################################
 
+version = (1, 0, 0)
+version_string = ".".join(map(str, version))
 
 def print_header(title):
     """
@@ -161,17 +163,21 @@ Copy music files from iTunes to an android device.
 # Main
 ###############################################################################
 
-args = parse_args()
-outdir = os.path.abspath(unicode_safe(args.outdir))
+def run_main():
+    args = parse_args()
+    outdir = os.path.abspath(unicode_safe(args.outdir))
 
-if not os.path.exists(outdir):
-    print(u"directory {} doesn't exist...".format(outdir))
-    sys.exit()
+    if not os.path.exists(outdir):
+        print(u"directory {} doesn't exist...".format(outdir))
+        sys.exit()
 
-pl_names = []
-for name in args.playlist:
-    pl_names.append(unicode_safe(name))
+    pl_names = []
+    for name in args.playlist:
+        pl_names.append(unicode_safe(name))
 
-print_header(u"Playlists: {}".format(', '.join(pl_names)))
-sync_playlist(pl_names, outdir, add_only=args.add_only)
-print_header(u"Sync of playlists complete!")
+    print_header(u"Playlists: {}".format(', '.join(pl_names)))
+    sync_playlist(pl_names, outdir, add_only=args.add_only)
+    print_header(u"Sync of playlists complete!")
+
+if __name__ == 'main':
+    run_main()
