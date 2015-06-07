@@ -31,7 +31,7 @@
 from __future__ import print_function
 import os
 import sys
-import string
+import argparse
 import shutil
 from appscript import app
 
@@ -77,7 +77,7 @@ def clean_droid_dir(directory):
             print(u'Remove dir {}'.format(root))
             os.removedirs(root)
 
-def sync_playlist(playlist_names, target_directory):
+def sync_playlist(playlist_names, target_directory, add_only=False):
     # iTunes integration taken from
     # http://www.math.columbia.edu/%7Ebayer/Python/iTunes/
     files_in_playlists = []
@@ -123,13 +123,16 @@ def sync_playlist(playlist_names, target_directory):
     else:
         print(u"Nothing to copy.")
 
-    print_header(u"Removing tracks found on droid, but not in playlist")
-    if len(to_be_removed):
-        for f in sorted(to_be_removed):
-            print(u'Remove "{}"'.format(f))
-            os.remove(os.path.join(target_directory, f))
+    if add_only:
+        print(u"Skip removing files.")
     else:
-        print(u"Nothing to remove.")
+        print_header(u"Removing tracks found on droid, but not in playlist")
+        if len(to_be_removed):
+            for f in sorted(to_be_removed):
+                print(u'Remove "{}"'.format(f))
+                os.remove(os.path.join(target_directory, f))
+        else:
+            print(u"Nothing to remove.")
 
     clean_droid_dir(target_directory)
 
@@ -142,23 +145,33 @@ def unicode_safe(s):
         return s
 
 
+def parse_args():
+    description = '''
+Copy music files from iTunes to an android device.
+'''
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-a', '--add', dest='add_only', action='store_const',
+                        const=True, default=False,
+                        help='only add files to target dir')
+    parser.add_argument('playlist', nargs='+', help='the playlist name(s)')
+    parser.add_argument('outdir', help='the target folder')
+    return parser.parse_args()
+
 ###############################################################################
 # Main
 ###############################################################################
-if len(sys.argv) < 3:
-    print(u"usage: [playlist_name [playlist_name, ...]] [copy directory]")
-    sys.exit()
 
-outdir = os.path.abspath(unicode_safe(sys.argv[-1]))
+args = parse_args()
+outdir = os.path.abspath(unicode_safe(args.outdir))
 
 if not os.path.exists(outdir):
-    print(u"directory: {} doesn't exist...".format(outdir))
+    print(u"directory {} doesn't exist...".format(outdir))
     sys.exit()
 
 pl_names = []
-for name in sys.argv[1:-1]:
+for name in args.playlist:
     pl_names.append(unicode_safe(name))
 
 print_header(u"Playlists: {}".format(', '.join(pl_names)))
-sync_playlist(pl_names, outdir)
+sync_playlist(pl_names, outdir, add_only=args.add_only)
 print_header(u"Sync of playlists complete!")
