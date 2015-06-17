@@ -50,8 +50,12 @@ Feel free to fork, make changes and send a pull request.
 
 ## License
 
-Copyright 2010-2015 Brendan Almonte <almonteb@datawh.net>
+Copyright 2010-2015 Brendan Almonte <almonteb@datawh.net>.
+
 Portions of this software were developed by Dirk Ruediger <dirk@niebegeg.net>.
+
+This software contains code derived from iTunes integration Code written by
+Dave Bayer (https://www.math.columbia.edu/~bayer/Python/iTunes/).
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
