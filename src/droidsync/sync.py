@@ -1,30 +1,20 @@
 # encoding: utf-8
 ###############################################################################
 #
-# Author    : Brendan Almonte (almonteb@datawh.net)
-# Company   : Data Warehouse
-# Date      : 03-23-2010
-# Filename  : sync.py
+# Copyright 2010-2015 Brendan Almonte <almonteb@datawh.net>
+# Portions of this software were developed by Dirk Ruediger <dirk@niebegeg.net>.
 #
-###############################################################################
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
-#      Tested Version Info
-# O/S       : Tested on Snow Leopard 10.6.2 and Yosemity 10.10.3
-# Python    : Python 2.6.1, 2.7.8 and 3.4.1
+#      http://www.apache.org/licenses/LICENSE-2.0
 #
-###############################################################################
-#
-#      Usage
-# python sync.py [playlist_name [playlist_name ...]] [copy directory]
-#
-###############################################################################
-#
-#      Description
-# Start by getting list of files in playlist
-# Compare files in playlist to whats already in the directory
-# if in directory.. ignore
-# if in directory and not on playlist... remove
-# if not in directory and on playlist... add
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 ###############################################################################
 

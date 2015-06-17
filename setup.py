@@ -44,7 +44,7 @@ setup(
         'Intended Audience :: End Users/Desktop',
         'Environment :: Console',
         'Development Status :: 5 - Production/Stable',
-        'License :: <... needs clarification ...>',
+        'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
